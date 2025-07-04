@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizador Completo de Algoritmos de Caminos Mínimos</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 450px;
+            gap: 0;
+            min-height: 700px;
+        }
+        
+        .canvas-container {
+            position: relative;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+        
+        #graphCanvas {
+            border: 3px dashed #dee2e6;
+            border-radius: 15px;
+            background: white;
+            cursor: crosshair;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+        
+        #graphCanvas:hover {
+            border-color: #667eea;
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.1);
+        }
+        
+        .controls {
+            background: #fff;
+            padding: 30px;
+            border-left: 1px solid #e9ecef;
+            overflow-y: auto;
+            max-height: 700px;
+        }
+        
+        .control-group {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .control-group h3 {
+            margin: 0 0 15px 0;
+            color: #495057;
+            font-size: 1.1em;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 120px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        select, button {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            margin-bottom: 8px;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
+        }
+        
+        .algorithm-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .step-info {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .step-info h4 {
+            margin: 0 0 10px 0;
+            color: #667eea;
+        }
+        
+        .distances {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .help {
+            background: #e7f3ff;
+            border: 1px solid #b8daff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #004085;
+        }
+        
+        .mode-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(102, 126, 234, 0.9);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .current-node {
+            fill: #ff6b6b !important;
+            stroke: #c92a2a !important;
+        }
+        
+        .processed-node {
+            fill: #51cf66 !important;
+            stroke: #37b24d !important;
+        }
+        
+        .unprocessed-node {
+            fill: #74c0fc !important;
+            stroke: #339af0 !important;
+        }
+        
+        .matrix-display {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            max-height: 300px;
+            overflow: auto;
+        }
+        
+        .matrix-table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        
+        .matrix-table th, .matrix-table td {
+            border: 1px solid #dee2e6;
+            padding: 4px 8px;
+            text-align: center;
+            font-size: 11px;
+        }
+        
+        .matrix-table th {
+            background: #e9ecef;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Visualizador Completo de Algoritmos de Caminos Mínimos</h1>
+            <p>Crea nodos, define conexiones y ejecuta múltiples algoritmos</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="canvas-container">
+                <div class="mode-indicator" id="modeIndicator">Modo: Crear Nodos</div>
+                <canvas id="graphCanvas" width="800" height="600"></canvas>
+            </div>
+            
+            <div class="controls">
+                <div class="help">
+                    💡 <strong>Instrucciones:</strong><br>
+                    • <strong>Click izquierdo:</strong> Crear nodo<br>
+                    • <strong>Click derecho:</strong> Modo crear arista (clic nodo origen, luego destino)<br>
+                    • <strong>Doble clic arista:</strong> Editar peso<br>
+                    • <strong>Sintaxis:</strong> A->B = 5 (dirigido), A<->B = 3 (bidireccional)
+                </div>
+                
+                <div class="control-group">
+                    <h3>🔗 Definir Conexiones</h3>
+                    <textarea id="edgesInput" placeholder="Ejemplos:&#10;A->B = 4&#10;A<->E = 8&#10;B->C = 2&#10;B<->F = 6&#10;C->D = 1&#10;C<->G = 2&#10;D->H = 4&#10;E<->F = 5&#10;F->G = 1&#10;G<->H = 1"></textarea>
+                    <button onclick="parseEdges()">Aplicar Conexiones</button>
+                    <button onclick="clearGraph()" class="btn-danger">Limpiar Grafo</button>
+                </div>
+                
+                <div class="control-group">
+                    <h3>🎯 Algoritmos de Camino Único</h3>
+                    <select id="startNode">
+                        <option value="">Seleccionar nodo origen</option>
+                    </select>
+                    
+                    <div class="algorithm-buttons">
+                        <button onclick="runDijkstra('step')" id="dijkstraStepBtn">Dijkstra Paso a Paso</button>
+                        <button onclick="runDijkstra('complete')" id="dijkstraCompleteBtn">Dijkstra Completo</button>
+                        <button onclick="nextStep()" id="nextBtn" disabled>Siguiente Paso</button>
+                        <button onclick="reset()" class="btn-warning">Reiniciar</button>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <h3>🌐 Algoritmos All-Pairs</h3>
+                    <div class="algorithm-buttons">
+                        <button onclick="runFloydWarshall()" class="btn-secondary">Floyd-Warshall</button>
+                        <button onclick="runJohnson()" class="btn-secondary">Johnson</button>
+                        <button onclick="runSlowAPSP()" class="btn-secondary">SLOW-APSP</button>
+                        <button onclick="runFasterAPSP()" class="btn-secondary">FASTER-APSP</button>
+                    </div>
+                </div>
+                
+                <div class="step-info">
+                    <h4>📊 Estado Actual</h4>
+                    <div id="stepDescription">Haz clic en el canvas para crear nodos</div>
+                    <div class="distances" id="distances"></div>
+                    <div class="matrix-display" id="matrixDisplay"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class GraphVisualizer {
+            constructor() {
+                this.canvas = document.getElementById('graphCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.nodes = new Map();
+                this.edges = [];
+                this.adjacencyList = new Map();
+                this.mode = 'create'; // 'create', 'edge'
+                this.tempEdgeStart = null;
+                this.tempEdgeEnd = null;
+                
+                // Algorithm states
+                this.distances = new Map();
+                this.previous = new Map();
+                this.unvisited = new Set();
+                this.visited = new Set();
+                this.currentNode = null;
+                this.algorithm_steps = [];
+                this.current_step_index = 0;
+                this.currentAlgorithm = null;
+                this.allPairsMatrix = null;
+                
+                this.setupEventListeners();
+                this.draw();
+                this.updateModeIndicator();
+            }
+            
+            setupEventListeners() {
+                this.canvas.addEventListener('click', (e) => this.handleCanvasClick(e));
+                this.canvas.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    this.handleRightClick(e);
+                });
+                this.canvas.addEventListener('dblclick', (e) => this.handleDoubleClick(e));
+            }
+            
+            updateModeIndicator() {
+                const indicator = document.getElementById('modeIndicator');
+                switch(this.mode) {
+                    case 'create':
+                        indicator.textContent = 'Modo: Crear Nodos';
+                        indicator.style.background = 'rgba(102, 126, 234, 0.9)';
+                        break;
+                    case 'edge':
+                        indicator.textContent = 'Modo: Crear Arista - Selecciona nodo origen';
+                        indicator.style.background = 'rgba(40, 167, 69, 0.9)';
+                        break;
+                    case 'edge_target':
+                        indicator.textContent = 'Modo: Crear Arista - Selecciona nodo destino';
+                        indicator.style.background = 'rgba(255, 193, 7, 0.9)';
+                        break;
+                }
+            }
+            
+            handleCanvasClick(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const clickedNode = this.getNodeAt(x, y);
+                
+                if (this.mode === 'create') {
+                    if (!clickedNode) {
+                        this.addNode(x, y);
+                    }
+                } else if (this.mode === 'edge') {
+                    if (clickedNode) {
+                        this.tempEdgeStart = clickedNode;
+                        this.mode = 'edge_target';
+                        this.updateModeIndicator();
+                    }
+                } else if (this.mode === 'edge_target') {
+                    if (clickedNode && clickedNode !== this.tempEdgeStart) {
+                        const weight = prompt(`Peso de la arista ${this.tempEdgeStart}->${clickedNode}:`, '1');
+                        if (weight !== null && !isNaN(weight)) {
+                            this.addEdge(this.tempEdgeStart, clickedNode, parseInt(weight));
+                        }
+                    }
+                    this.mode = 'create';
+                    this.tempEdgeStart = null;
+                    this.updateModeIndicator();
+                }
+            }
+            
+            handleRightClick(e) {
+                this.mode = this.mode === 'edge' ? 'create' : 'edge';
+                this.tempEdgeStart = null;
+                this.updateModeIndicator();
+            }
+            
+            handleDoubleClick(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const edge = this.getEdgeAt(x, y);
+                if (edge) {
+                    const newWeight = prompt(`Nuevo peso para ${edge.from}->${edge.to}:`, edge.weight);
+                    if (newWeight !== null && !isNaN(newWeight)) {
+                        edge.weight = parseInt(newWeight);
+                        this.draw();
+                    }
+                }
+            }
+            
+            getNodeAt(x, y) {
+                for (let [name, node] of this.nodes) {
+                    const dx = x - node.x;
+                    const dy = y - node.y;
+                    if (dx * dx + dy * dy <= 25 * 25) {
+                        return name;
+                    }
+                }
+                return null;
+            }
+            
+            getEdgeAt(x, y) {
+                for (let edge of this.edges) {
+                    const fromNode = this.nodes.get(edge.from);
+                    const toNode = this.nodes.get(edge.to);
+                    if (fromNode && toNode) {
+                        const midX = (fromNode.x + toNode.x) / 2;
+                        const midY = (fromNode.y + toNode.y) / 2;
+                        const dx = x - midX;
+                        const dy = y - midY;
+                        if (dx * dx + dy * dy <= 20 * 20) {
+                            return edge;
+                        }
+                    }
+                }
+                return null;
+            }
+            
+            addNode(x, y) {
+                const name = String.fromCharCode(65 + this.nodes.size);
+                this.nodes.set(name, { x, y, name });
+                this.adjacencyList.set(name, []);
+                this.updateNodeSelect();
+                this.draw();
+                this.updateStatus(`Nodo ${name} creado. Total: ${this.nodes.size} nodos`);
+            }
+            
+            addEdge(from, to, weight) {
+                const edge = { from, to, weight };
+                this.edges.push(edge);
+                
+                if (!this.adjacencyList.has(from)) this.adjacencyList.set(from, []);
+                if (!this.adjacencyList.has(to)) this.adjacencyList.set(to, []);
+                
+                this.adjacencyList.get(from).push({ node: to, weight });
+                this.draw();
+                this.updateStatus(`Arista ${from}->${to} (peso: ${weight}) añadida`);
+            }
+            
+            updateNodeSelect() {
+                const select = document.getElementById('startNode');
+                select.innerHTML = '<option value="">Seleccionar nodo origen</option>';
+                
+                for (let name of this.nodes.keys()) {
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    select.appendChild(option);
+                }
+            }
+            
+            parseEdges() {
+                const input = document.getElementById('edgesInput').value;
+                const lines = input.split('\n').filter(line => line.trim());
+                
+                this.edges = [];
+                this.adjacencyList.clear();
+                
+                for (let name of this.nodes.keys()) {
+                    this.adjacencyList.set(name, []);
+                }
+                
+                for (let line of lines) {
+                    // Bidirectional: A<->B = 5
+                    let match = line.match(/(\w+)\s*<->\s*(\w+)\s*=\s*(\d+)/);
+                    if (match) {
+                        const [, from, to, weight] = match;
+                        if (this.nodes.has(from) && this.nodes.has(to)) {
+                            const w = parseInt(weight);
+                            this.edges.push({ from, to, weight: w });
+                            this.edges.push({ from: to, to: from, weight: w });
+                            this.adjacencyList.get(from).push({ node: to, weight: w });
+                            this.adjacencyList.get(to).push({ node: from, weight: w });
+                        }
+                        continue;
+                    }
+                    
+                    // Directed: A->B = 5
+                    match = line.match(/(\w+)\s*->\s*(\w+)\s*=\s*(\d+)/);
+                    if (match) {
+                        const [, from, to, weight] = match;
+                        if (this.nodes.has(from) && this.nodes.has(to)) {
+                            const w = parseInt(weight);
+                            this.edges.push({ from, to, weight: w });
+                            this.adjacencyList.get(from).push({ node: to, weight: w });
+                        }
+                    }
+                }
+                
+                this.draw();
+                this.updateStatus(`${this.edges.length} conexiones aplicadas`);
+            }
+            
+            clearGraph() {
+                this.nodes.clear();
+                this.edges = [];
+                this.adjacencyList.clear();
+                this.reset();
+                this.updateNodeSelect();
+                this.draw();
+                this.updateStatus('Grafo limpiado');
+            }
+            
+            // Dijkstra Algorithm
+            runDijkstra(mode) {
+                const startNode = document.getElementById('startNode').value;
+                if (!startNode) {
+                    alert('Por favor selecciona un nodo origen');
+                    return;
+                }
+                
+                this.currentAlgorithm = 'dijkstra';
+                this.initializeDijkstra(startNode);
+                
+                if (mode === 'step') {
+                    document.getElementById('dijkstraStepBtn').disabled = true;
+                    document.getElementById('nextBtn').disabled = false;
+                    this.updateStatus(`Dijkstra iniciado desde ${startNode}. Presiona "Siguiente Paso"`);
+                } else {
+                    this.runDijkstraComplete();
+                }
+                
+                this.updateDistancesDisplay();
+                this.draw();
+            }
+            
+            initializeDijkstra(startNode) {
+                this.distances.clear();
+                this.previous.clear();
+                this.unvisited.clear();
+                this.visited.clear();
+                this.currentNode = null;
+                this.algorithm_steps = [];
+                this.current_step_index = 0;
+                
+                for (let node of this.nodes.keys()) {
+                    this.distances.set(node, node === startNode ? 0 : Infinity);
+                    this.previous.set(node, null);
+                    this.unvisited.add(node);
+                }
+                
+                this.generateDijkstraSteps(startNode);
+            }
+            
+            generateDijkstraSteps(startNode) {
+                const tempDistances = new Map(this.distances);
+                const tempUnvisited = new Set(this.unvisited);
+                const tempVisited = new Set();
+                
+                while (tempUnvisited.size > 0) {
+                    let minNode = null;
+                    let minDistance = Infinity;
+                    
+                    for (let node of tempUnvisited) {
+                        if (tempDistances.get(node) < minDistance) {
+                            minDistance = tempDistances.get(node);
+                            minNode = node;
+                        }
+                    }
+                    
+                    if (minNode === null || minDistance === Infinity) break;
+                    
+                    this.algorithm_steps.push({
+                        type: 'select',
+                        node: minNode,
+                        distances: new Map(tempDistances),
+                        unvisited: new Set(tempUnvisited),
+                        visited: new Set(tempVisited),
+                        description: `Seleccionando nodo ${minNode} con distancia ${minDistance === Infinity ? '∞' : minDistance}`
+                    });
+                    
+                    tempUnvisited.delete(minNode);
+                    tempVisited.add(minNode);
+                    
+                    const neighbors = this.adjacencyList.get(minNode) || [];
+                    for (let neighbor of neighbors) {
+                        if (tempUnvisited.has(neighbor.node)) {
+                            const newDistance = tempDistances.get(minNode) + neighbor.weight;
+                            if (newDistance < tempDistances.get(neighbor.node)) {
+                                tempDistances.set(neighbor.node, newDistance);
+                                
+                                this.algorithm_steps.push({
+                                    type: 'update',
+                                    node: minNode,
+                                    neighbor: neighbor.node,
+                                    oldDistance: this.distances.get(neighbor.node),
+                                    newDistance: newDistance,
+                                    distances: new Map(tempDistances),
+                                    unvisited: new Set(tempUnvisited),
+                                    visited: new Set(tempVisited),
+                                    description: `Actualizando ${neighbor.node}: ${tempDistances.get(neighbor.node) === Infinity ? '∞' : 'distancia anterior'} → ${newDistance}`
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            
+            runDijkstraComplete() {
+                while (this.current_step_index < this.algorithm_steps.length) {
+                    this.nextStep();
+                }
+                this.updateStatus('¡Dijkstra completado! Todas las distancias mínimas calculadas.');
+            }
+            
+            nextStep() {
+                if (this.current_step_index < this.algorithm_steps.length) {
+                    const step = this.algorithm_steps[this.current_step_index];
+                    
+                    this.distances = new Map(step.distances);
+                    this.unvisited = new Set(step.unvisited);
+                    this.visited = new Set(step.visited);
+                    this.currentNode = step.node;
+                    
+                    this.updateStatus(step.description);
+                    this.updateDistancesDisplay();
+                    this.draw();
+                    
+                    this.current_step_index++;
+                    
+                    if (this.current_step_index >= this.algorithm_steps.length) {
+                        document.getElementById('nextBtn').disabled = true;
+                        this.updateStatus('¡Algoritmo completado!');
+                    }
+                }
+            }
+            
+            // Floyd-Warshall Algorithm
+            runFloydWarshall() {
+                if (this.nodes.size === 0) {
+                    alert('Necesitas al menos un nodo para ejecutar Floyd-Warshall');
+                    return;
+                }
+                
+                this.currentAlgorithm = 'floyd-warshall';
+                this.reset();
+                
+                const nodeList = Array.from(this.nodes.keys()).sort();
+                const n = nodeList.length;
+                const INF = 999999;
+                
+                // Initialize distance matrix
+                let dist = Array(n).fill().map(() => Array(n).fill(INF));
+                
+                // Set diagonal to 0
+                for (let i = 0; i < n; i++) {
+                    dist[i][i] = 0;
+                }
+                
+                // Set edge weights
+                for (let edge of this.edges) {
+                    const i = nodeList.indexOf(edge.from);
+                    const j = nodeList.indexOf(edge.to);
+                    if (i !== -1 && j !== -1) {
+                        dist[i][j] = edge.weight;
+                    }
+                }
+                
+                // Floyd-Warshall algorithm
+                for (let k = 0; k < n; k++) {
+                    for (let i = 0; i < n; i++) {
+                        for (let j = 0; j < n; j++) {
+                            if (dist[i][k] + dist[k][j] < dist[i][j]) {
+                                dist[i][j] = dist[i][k] + dist[k][j];
+                            }
+                        }
+                    }
+                }
+                
+                this.allPairsMatrix = { matrix: dist, nodes: nodeList };
+                this.displayMatrix('Floyd-Warshall', dist, nodeList);
+                this.updateStatus('Floyd-Warshall completado. Matriz de distancias mínimas calculada.');
+            }
+            
+            // Johnson Algorithm
+            runJohnson() {
+                if (this.nodes.size === 0) {
+                    alert('Necesitas al menos un nodo para ejecutar Johnson');
+                    return;
+                }
+                
+                this.currentAlgorithm = 'johnson';
+                this.reset();
+                
+                // Simplified Johnson implementation
+                const nodeList = Array.from(this.nodes.keys()).sort();
+                const n = nodeList.length;
+                const INF = 999999;
+                
+                // Create distance matrix
+                let dist = Array(n).fill().map(() => Array(n).fill(INF));
+                
+                // Run Dijkstra from each vertex (simplified version)
+                for (let i = 0; i < n; i++) {
+                    const source = nodeList[i];
+                    const singleSourceDist = this.dijkstraSingleSource(source);
+                    
+                    for (let j = 0; j < n; j++) {
+                        const target = nodeList[j];
+                        dist[i][j] = singleSourceDist.get(target) || INF;
+                    }
+                }
+                
+                this.allPairsMatrix = { matrix: dist, nodes: nodeList };
+                this.displayMatrix('Johnson', dist, nodeList);
+                this.updateStatus('Johnson completado. Matriz de distancias mínimas calculada.');
+            }
+            
+            dijkstraSingleSource(source) {
+                const distances = new Map();
+                const unvisited = new Set();
+                
+                for (let node of this.nodes.keys()) {
+                    distances.set(node, node === source ? 0 : Infinity);
+                    unvisited.add(node);
+                }
+                
+                while (unvisited.size > 0) {
+                    let minNode = null;
+                    let minDistance = Infinity;
+                    
+                    for (let node of unvisited) {
+                        if (distances.get(node) < minDistance) {
+                            minDistance = distances.get(node);
+                            minNode = node;
+                        }
+                    }
+                    
+                    if (minNode === null || minDistance === Infinity) break;
+                    
+                    unvisited.delete(minNode);
+                    
+                    const neighbors = this.adjacencyList.get(minNode) || [];
+                    for (let neighbor of neighbors) {
+                        if (unvisited.has(neighbor.node)) {
+                            const newDistance = distances.get(minNode) + neighbor.weight;
+                            if (newDistance < distances.get(neighbor.node)) {
+                                distances.set(neighbor.node, newDistance);
+                            }
+                        }
+                    }
+                }
+                
+                return distances;
+            }
+            
+            // SLOW-APSP Algorithm
+            runSlowAPSP() {
+                if (this.nodes.size === 0) {
+                    alert('Necesitas al menos un nodo para ejecutar SLOW-APSP');
+                    return;
+                }
+                
+                this.currentAlgorithm = 'slow-apsp';
+                this.reset();
+                
+                const nodeList = Array.from(this.nodes.keys()).sort();
+                const n = nodeList.length;
+                const INF = 999999;
+                
+                // Initialize L(0)
+                let L = Array(n).fill().map(() => Array(n).fill(INF));
+                
+                for (let i = 0; i < n; i++) {
+                    L[i][i] = 0;
+                }
+                
+                for (let edge of this.edges) {
+                    const i = nodeList.indexOf(edge.from);
+                    const j = nodeList.indexOf(edge.to);
+                    if (i !== -1 && j !== -1) {
+                        L[i][j] = edge.weight;
+                    }
+                }
+                
+                // SLOW-APSP: n-1 iterations
+                for (let r = 1; r < n; r++) {
+                    let newL = Array(n).fill().map(() => Array(n).fill(INF));
+                    
+                    for (let i = 0; i < n; i++) {
+                        for (let j = 0; j < n; j++) {
+                            newL[i][j] = L[i][j];
+                            for (let k = 0; k < n; k++) {
+                                if (L[i][k] + L[k][j] < newL[i][j]) {
+                                    newL[i][j] = L[i][k] + L[k][j];
+                                }
+                            }
+                        }
+                    }
+                    L = newL;
+                }
+                
+                this.allPairsMatrix = { matrix: L, nodes: nodeList };
+                this.displayMatrix('SLOW-APSP', L, nodeList);
+                this.updateStatus(`SLOW-APSP completado en O(V⁴) tiempo. ${n-1} iteraciones ejecutadas.`);
+            }
+            
+            // FASTER-APSP Algorithm
+            runFasterAPSP() {
+                if (this.nodes.size === 0) {
+                    alert('Necesitas al menos un nodo para ejecutar FASTER-APSP');
+                    return;
+                }
+                
+                this.currentAlgorithm = 'faster-apsp';
+                this.reset();
+                
+                const nodeList = Array.from(this.nodes.keys()).sort();
+                const n = nodeList.length;
+                const INF = 999999;
+                
+                // Initialize L(1) = W
+                let L = Array(n).fill().map(() => Array(n).fill(INF));
+                
+                for (let i = 0; i < n; i++) {
+                    L[i][i] = 0;
+                }
+                
+                for (let edge of this.edges) {
+                    const i = nodeList.indexOf(edge.from);
+                    const j = nodeList.indexOf(edge.to);
+                    if (i !== -1 && j !== -1) {
+                        L[i][j] = edge.weight;
+                    }
+                }
+                
+                // FASTER-APSP: repeated squaring
+                let r = 1;
+                while (r < n - 1) {
+                    let newL = this.matrixMultiply(L, L, INF);
+                    L = newL;
+                    r = 2 * r;
+                }
+                
+                this.allPairsMatrix = { matrix: L, nodes: nodeList };
+                this.displayMatrix('FASTER-APSP', L, nodeList);
+                this.updateStatus(`FASTER-APSP completado en O(V³ log V) tiempo usando elevación repetida.`);
+            }
+            
+            matrixMultiply(A, B, INF) {
+                const n = A.length;
+                let C = Array(n).fill().map(() => Array(n).fill(INF));
+                
+                for (let i = 0; i < n; i++) {
+                    for (let j = 0; j < n; j++) {
+                        for (let k = 0; k < n; k++) {
+                            C[i][j] = Math.min(C[i][j], A[i][k] + B[k][j]);
+                        }
+                    }
+                }
+                
+                return C;
+            }
+            
+            displayMatrix(algorithmName, matrix, nodeList) {
+                const matrixDiv = document.getElementById('matrixDisplay');
+                const n = matrix.length;
+                const INF = 999999;
+                
+                let html = `<h5>${algorithmName} - Matriz de Distancias Mínimas:</h5>`;
+                html += '<table class="matrix-table">';
+                
+                // Header row
+                html += '<tr><th></th>';
+                for (let j = 0; j < n; j++) {
+                    html += `<th>${nodeList[j]}</th>`;
+                }
+                html += '</tr>';
+                
+                // Data rows
+                for (let i = 0; i < n; i++) {
+                    html += `<tr><th>${nodeList[i]}</th>`;
+                    for (let j = 0; j < n; j++) {
+                        const val = matrix[i][j] === INF ? '∞' : matrix[i][j];
+                        html += `<td>${val}</td>`;
+                    }
+                    html += '</tr>';
+                }
+                
+                html += '</table>';
+                matrixDiv.innerHTML = html;
+            }
+            
+            reset() {
+                this.distances.clear();
+                this.previous.clear();
+                this.unvisited.clear();
+                this.visited.clear();
+                this.currentNode = null;
+                this.algorithm_steps = [];
+                this.current_step_index = 0;
+                this.currentAlgorithm = null;
+                this.allPairsMatrix = null;
+                
+                document.getElementById('dijkstraStepBtn').disabled = false;
+                document.getElementById('nextBtn').disabled = true;
+                document.getElementById('distances').innerHTML = '';
+                document.getElementById('matrixDisplay').innerHTML = '';
+                this.updateStatus('Sistema reiniciado. Listo para nuevo algoritmo.');
+                this.draw();
+            }
+            
+            updateDistancesDisplay() {
+                if (this.currentAlgorithm === 'dijkstra') {
+                    const distancesDiv = document.getElementById('distances');
+                    let html = '<strong>Distancias desde origen:</strong><br>';
+                    
+                    for (let [node, distance] of this.distances) {
+                        const status = this.visited.has(node) ? '✅' : this.currentNode === node ? '🔴' : '⏳';
+                        html += `${status} ${node}: ${distance === Infinity ? '∞' : distance}<br>`;
+                    }
+                    
+                    distancesDiv.innerHTML = html;
+                }
+            }
+            
+            updateStatus(message) {
+                document.getElementById('stepDescription').textContent = message;
+            }
+            
+            draw() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Draw edges
+                this.ctx.strokeStyle = '#6c757d';
+                this.ctx.lineWidth = 2;
+                
+                for (let edge of this.edges) {
+                    const fromNode = this.nodes.get(edge.from);
+                    const toNode = this.nodes.get(edge.to);
+                    
+                    if (fromNode && toNode) {
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(fromNode.x, fromNode.y);
+                        this.ctx.lineTo(toNode.x, toNode.y);
+                        this.ctx.stroke();
+                        
+                        // Draw arrow
+                        const angle = Math.atan2(toNode.y - fromNode.y, toNode.x - fromNode.x);
+                        const arrowLength = 15;
+                        const arrowAngle = Math.PI / 6;
+                        
+                        const endX = toNode.x - 25 * Math.cos(angle);
+                        const endY = toNode.y - 25 * Math.sin(angle);
+                        
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(endX, endY);
+                        this.ctx.lineTo(
+                            endX - arrowLength * Math.cos(angle - arrowAngle),
+                            endY - arrowLength * Math.sin(angle - arrowAngle)
+                        );
+                        this.ctx.moveTo(endX, endY);
+                        this.ctx.lineTo(
+                            endX - arrowLength * Math.cos(angle + arrowAngle),
+                            endY - arrowLength * Math.sin(angle + arrowAngle)
+                        );
+                        this.ctx.stroke();
+                        
+                        // Draw weight
+                        const midX = (fromNode.x + toNode.x) / 2;
+                        const midY = (fromNode.y + toNode.y) / 2;
+                        this.ctx.fillStyle = '#495057';
+                        this.ctx.font = 'bold 14px Arial';
+                        this.ctx.fillText(edge.weight, midX - 8, midY - 8);
+                    }
+                }
+                
+                // Draw nodes
+                for (let [name, node] of this.nodes) {
+                    // Determine node color based on algorithm state
+                    if (this.currentNode === name) {
+                        this.ctx.fillStyle = '#ff6b6b';
+                        this.ctx.strokeStyle = '#c92a2a';
+                    } else if (this.visited.has(name)) {
+                        this.ctx.fillStyle = '#51cf66';
+                        this.ctx.strokeStyle = '#37b24d';
+                    } else if (this.unvisited.has(name)) {
+                        this.ctx.fillStyle = '#74c0fc';
+                        this.ctx.strokeStyle = '#339af0';
+                    } else {
+                        this.ctx.fillStyle = '#e9ecef';
+                        this.ctx.strokeStyle = '#6c757d';
+                    }
+                    
+                    this.ctx.lineWidth = 3;
+                    this.ctx.beginPath();
+                    this.ctx.arc(node.x, node.y, 25, 0, 2 * Math.PI);
+                    this.ctx.fill();
+                    this.ctx.stroke();
+                    
+                    // Draw node label
+                    this.ctx.fillStyle = '#000';
+                    this.ctx.font = 'bold 16px Arial';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText(name, node.x, node.y + 6);
+                    
+                    // Draw distance if Dijkstra is running
+                    if (this.currentAlgorithm === 'dijkstra' && this.distances.has(name)) {
+                        const distance = this.distances.get(name);
+                        this.ctx.fillStyle = '#667eea';
+                        this.ctx.font = 'bold 12px Arial';
+                        this.ctx.fillText(
+                            distance === Infinity ? '∞' : distance,
+                            node.x,
+                            node.y - 35
+                        );
+                    }
+                }
+            }
+        }
+        
+        // Global variables and functions
+        let visualizer;
+        
+        function parseEdges() {
+            visualizer.parseEdges();
+        }
+        
+        function runDijkstra(mode) {
+            visualizer.runDijkstra(mode);
+        }
+        
+        function nextStep() {
+            visualizer.nextStep();
+        }
+        
+        function reset() {
+            visualizer.reset();
+        }
+        
+        function clearGraph() {
+            visualizer.clearGraph();
+        }
+        
+        function runFloydWarshall() {
+            visualizer.runFloydWarshall();
+        }
+        
+        function runJohnson() {
+            visualizer.runJohnson();
+        }
+        
+        function runSlowAPSP() {
+            visualizer.runSlowAPSP();
+        }
+        
+        function runFasterAPSP() {
+            visualizer.runFasterAPSP();
+        }
+        
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            visualizer = new GraphVisualizer();
+        });
+    </script>
+</body>
+</html>
